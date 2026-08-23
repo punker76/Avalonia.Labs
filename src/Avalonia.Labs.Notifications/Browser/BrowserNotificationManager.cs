@@ -1,0 +1,142 @@
+﻿#if BROWSER
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Runtime.InteropServices.JavaScript;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+
+namespace Avalonia.Labs.Notifications.Browser;
+
+partial class BrowserNotificationManager : INativeNotificationManagerImpl
+{
+    Dictionary<uint, INativeNotification> currents = new();
+
+    public NotificationChannelManager ChannelManager { get; private set; }
+    public bool ClearOnClose { get; set; }
+    public IReadOnlyDictionary<uint, INativeNotification> ActiveNotifications => currents;
+
+    public BrowserNotificationManager()
+    {
+        ChannelManager = new NotificationChannelManager();
+    }
+
+    [JSImport("create", "notifications")]
+    public static partial Task ShowNotification(string title, string options);
+
+    [JSImport("closeAllNotifications", "notifications")]
+    public static partial Task CloseAllNotifications();
+
+    [JSImport("registerServiceWorker", "notifications")]
+    public static partial Task RegisterServiceWorker();
+
+    [JSImport("isServiceSupported", "notifications")]
+    public static partial bool IsServiceSupported();
+
+    [JSImport("isSupported", "notifications")]
+    public static partial bool IsSupported();
+
+    [JSImport("registrations", "notifications")]
+    public static partial Task RegisterHandlers(
+        [JSMarshalAs<JSType.Function<JSType.String>>] Action<string> onclose,
+        [JSMarshalAs<JSType.Function<JSType.String>>] Action<string> onclick,
+        [JSMarshalAs<JSType.Function<JSType.String, JSType.String>>] Action<string, string> onreply);
+
+    public async void HandleNotificationClose(string data)
+    {
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(data));
+        var obj = await JsonSerializer.DeserializeAsync(stream, NotificationJsonContext.Default.Data);
+        if (obj != null && obj.data?.id is uint id && currents.TryGetValue(id, out var item))
+        {
+            NotificationCompleted?.Invoke(this, new NativeNotificationCompletedEventArgs()
+            {
+                IsCancelled = true,
+                NotificationId = id
+            });
+            currents.Remove(id);
+        }
+    }
+
+    public async void HandleNotificationClick(string data)
+    {
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(data));
+        var obj = await JsonSerializer.DeserializeAsync(stream, NotificationJsonContext.Default.Data);
+        if (obj != null && obj.data?.id is uint id && currents.TryGetValue(id, out var item))
+        {
+            NotificationCompleted?.Invoke(this, new NativeNotificationCompletedEventArgs()
+            {
+                ActionTag = obj.action,
+                IsActivated = string.IsNullOrWhiteSpace(obj.action),
+                IsCancelled = false,
+                NotificationId = id
+            });
+            currents.Remove(id);
+        }
+    }
+
+    public async void HandleNotificationReply(string data, string reply)
+    {
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(data));
+        var obj = await JsonSerializer.DeserializeAsync(stream, NotificationJsonContext.Default.ReplyData);
+        if (obj != null && obj.data?.id is uint id && currents.TryGetValue(id, out var item))
+        {
+            NotificationCompleted?.Invoke(this, new NativeNotificationCompletedEventArgs()
+            {
+                ActionTag = obj.action,
+                IsActivated = string.IsNullOrWhiteSpace(obj.action),
+                IsCancelled = false,
+                NotificationId = id,
+                UserData = reply
+            });
+            currents.Remove(id);
+        }
+    }
+
+    public event EventHandler<NativeNotificationCompletedEventArgs>? NotificationCompleted;
+
+    public async void CloseAll()
+    {
+        await CloseAllNotifications();
+        currents.Clear();
+    }
+
+    public INativeNotification? CreateNotification(string? category)
+    {
+        if (!IsSupported())
+            return null;
+
+        var channel = ChannelManager?.GetChannel(category ?? NotificationChannelManager.DefaultChannel) ??
+            ChannelManager?.AddChannel(new NotificationChannel(NotificationChannelManager.DefaultChannel, NotificationChannelManager.DefaultChannelLabel));
+        if (channel == null)
+            return null;
+
+        var item = new BrowserNotification(channel, this);
+        currents.Add(item.Id, item);
+        return item;
+    }
+
+    public async Task Show(BrowserNotification notification, NotificationOptions options)
+    {
+        await ShowNotification(notification.Title, JsonSerializer.Serialize(options, NotificationJsonContext.Default.NotificationOptions));
+    }
+
+    public void Dispose()
+    {
+        if (ClearOnClose)
+            CloseAll();
+    }
+
+    public async void Initialize(AppNotificationOptions? options)
+    {
+        await JSHost.ImportAsync("notifications", "/_content/Avalonia.Labs.Notifications/notifications.js");
+        if (IsServiceSupported())
+        {
+            await RegisterServiceWorker();
+            await RegisterHandlers(HandleNotificationClose, HandleNotificationClick, HandleNotificationReply);
+        }
+        else
+            Console.WriteLine("Browser does not support service worker");
+    }
+}
+#endif

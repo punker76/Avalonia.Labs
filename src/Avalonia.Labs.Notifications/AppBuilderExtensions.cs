@@ -43,6 +43,12 @@ namespace Avalonia.Labs.Notifications
                 notificationManager = new Linux.LinuxNativeNotificationManager();
             }
 #endif
+#if BROWSER
+            else if (OperatingSystem.IsBrowser())
+            {
+                notificationManager = new Browser.BrowserNotificationManager();
+            }
+#endif
             else
             {
                 return appBuilder;

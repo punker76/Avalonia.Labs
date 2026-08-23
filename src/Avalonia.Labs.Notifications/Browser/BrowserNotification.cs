@@ -1,0 +1,81 @@
+﻿#if BROWSER
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using Avalonia.Controls;
+using Avalonia.Media.Imaging;
+
+namespace Avalonia.Labs.Notifications.Browser;
+
+class BrowserNotification : INativeNotification
+{
+    private static uint s_currentId = 0;
+    BrowserNotificationManager manager;
+    string? category;
+
+    public BrowserNotification(NotificationChannel channel, BrowserNotificationManager manager)
+    {
+        this.category = channel.Id;
+        this.manager = manager;
+        this.Actions = channel.Actions;
+        this.ChannelIcon = channel.Icon;
+
+        Id = GetNextId();
+    }
+
+    public uint Id { get; }
+    public string? ReplyActionTag {  get; set; }
+
+    public string? Category => category;
+    public string? ChannelIcon { get; set; }
+    public string? Title { get; set; }
+    public string? Tag { get; set; }
+    public string? Message { get; set; }
+    public TimeSpan? Expiration { get; set; }
+    public IReadOnlyList<NativeNotificationAction>? Actions { get; private set; }
+    public Bitmap? Icon { get; set; }
+
+    public void Close()
+    {
+        //Nothing to do
+    }
+
+    public async void Show()
+    {
+        string? icon = null;
+        if (ChannelIcon == null && Icon != null)
+        {
+            using var ms = new MemoryStream();
+            Icon.Save(ms);
+            var bytes = ms.ToArray();
+            var base64 = Convert.ToBase64String(bytes);
+            icon = $"data:image/png;base64,{base64}";
+        }
+
+        await manager.Show(this, new NotificationOptions()
+        {
+            Actions = Actions?.Select(a => new NotificationAction { Action = a.Tag, Icon = a.ActionIcon, Title = a.Caption, Type = a.Tag == ReplyActionTag ? "text" : "button" }).ToArray() ?? [],
+            Body = Message,
+            Data = new NotificationData
+            {
+                Id = Id,
+                ReplyActionTag = ReplyActionTag,
+            },
+            Icon = ChannelIcon ?? icon,
+            Tag = Tag
+        });
+    }
+
+    private static uint GetNextId()
+    {
+        return Interlocked.Increment(ref s_currentId);
+    }
+
+    public void SetActions(IReadOnlyList<NativeNotificationAction>? actions)
+    {
+        Actions = actions;
+    }
+}
+#endif
