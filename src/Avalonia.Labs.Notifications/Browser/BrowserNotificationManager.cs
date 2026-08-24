@@ -46,7 +46,7 @@ partial class BrowserNotificationManager : INativeNotificationManagerImpl
         [JSMarshalAs<JSType.Function<JSType.String>>] Action<string> onclick,
         [JSMarshalAs<JSType.Function<JSType.String, JSType.String>>] Action<string, string> onreply);
 
-    public async void HandleNotificationClose(string data)
+    public async void OnClose(string data)
     {
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(data));
         var obj = await JsonSerializer.DeserializeAsync(stream, NotificationJsonContext.Default.Data);
@@ -60,7 +60,7 @@ partial class BrowserNotificationManager : INativeNotificationManagerImpl
         }
     }
 
-    public async void HandleNotificationClick(string data)
+    public async void OnClick(string data)
     {
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(data));
         var obj = await JsonSerializer.DeserializeAsync(stream, NotificationJsonContext.Default.Data);
@@ -76,7 +76,7 @@ partial class BrowserNotificationManager : INativeNotificationManagerImpl
         }
     }
 
-    public async void HandleNotificationReply(string data, string reply)
+    public async void OnReply(string data, string reply)
     {
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(data));
         var obj = await JsonSerializer.DeserializeAsync(stream, NotificationJsonContext.Default.ReplyData);
@@ -139,7 +139,7 @@ partial class BrowserNotificationManager : INativeNotificationManagerImpl
         if (IsServiceSupported())
         {
             await RegisterServiceWorker();
-            await RegisterHandlers(HandleNotificationClose, HandleNotificationClick, HandleNotificationReply);
+            await RegisterHandlers(OnClose, OnClick, OnReply);
         }
         else
             Console.WriteLine("Browser does not support service worker");
