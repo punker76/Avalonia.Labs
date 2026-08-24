@@ -3,9 +3,15 @@
 }
 
 export async function registerServiceWorker() {
-    //Two choices find a way to set Service-Worker-Allowed: / or Copy file to wwwroot
-    // await navigator.serviceWorker.register("notifications-service-worker.js", { scope: "/" });
-    await navigator.serviceWorker.register("_content/Avalonia.Labs.Notifications/notifications-service-worker.js", { scope: "/" });
+    await navigator.serviceWorker.register("notifications-service-worker.js")
+        .then(
+            (registration) => {
+                console.log("Install succeeded, scoped to '/'", registration);
+            },
+            (error) => {
+                console.error(`Service worker registration failed: ${error}`);
+            },
+        );
 }
 
 export async function requestPermission() {
@@ -14,6 +20,17 @@ export async function requestPermission() {
 
 export function isSupported() {
     return 'Notification' in window;
+}
+
+export async function close(id) {
+    const registration = await navigator.serviceWorker.ready;
+    const notifications = await registration.getNotifications();
+    notifications.forEach(n => {
+        if (n.data && Number(n.data.id) === Number(id)) {
+            console.log("Closed");
+            n.close();
+        }
+    });
 }
 
 export async function closeAllNotifications() {

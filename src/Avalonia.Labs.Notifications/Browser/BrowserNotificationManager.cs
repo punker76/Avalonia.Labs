@@ -25,6 +25,9 @@ partial class BrowserNotificationManager : INativeNotificationManagerImpl
     [JSImport("create", "notifications")]
     public static partial Task ShowNotification(string title, string options);
 
+    [JSImport("close", "notifications")]
+    public static partial Task CloseNotification(string id);
+
     [JSImport("closeAllNotifications", "notifications")]
     public static partial Task CloseAllNotifications();
 
@@ -54,7 +57,6 @@ partial class BrowserNotificationManager : INativeNotificationManagerImpl
                 IsCancelled = true,
                 NotificationId = id
             });
-            currents.Remove(id);
         }
     }
 
@@ -71,7 +73,6 @@ partial class BrowserNotificationManager : INativeNotificationManagerImpl
                 IsCancelled = false,
                 NotificationId = id
             });
-            currents.Remove(id);
         }
     }
 
@@ -88,8 +89,7 @@ partial class BrowserNotificationManager : INativeNotificationManagerImpl
                 IsCancelled = false,
                 NotificationId = id,
                 UserData = reply
-            });
-            currents.Remove(id);
+            });            
         }
     }
 
@@ -119,6 +119,12 @@ partial class BrowserNotificationManager : INativeNotificationManagerImpl
     public async Task Show(BrowserNotification notification, NotificationOptions options)
     {
         await ShowNotification(notification.Title, JsonSerializer.Serialize(options, NotificationJsonContext.Default.NotificationOptions));
+    }
+
+    public async Task Close(uint id)
+    {
+        await CloseNotification(id.ToString());
+        currents.Remove(id);
     }
 
     public void Dispose()

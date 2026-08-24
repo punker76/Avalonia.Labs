@@ -11,10 +11,7 @@
     <DefineConstants Condition="'$(TargetFramework)' == 'net8.0'">$(DefineConstants);INCLUDE_WINDOWS;INCLUDE_LINUX</DefineConstants>
     <!-- ModuleInitializer in microcom codegen -->
     <NoWarn>$(NoWarn);CA2255</NoWarn>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(IsBrowser)' == 'true'">
-    <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -41,7 +38,7 @@
     <PackageReference Include="Xamarin.AndroidX.AppCompat" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(IsBrowser)' == 'true'">
-    <ServiceWorker Include="wwwroot\notifications-service-worker.js" PublishedContent="wwwroot\notifications-service-worker-published.js" />
+  <ItemGroup>
+    <Content Include="build\Avalonia.Labs.Notifications.targets" PackagePath="buildTransitive\" />
   </ItemGroup>
 </Project>

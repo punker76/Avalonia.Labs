@@ -20,7 +20,8 @@ internal sealed partial class Program
             {
                 new("Hello", "hello"),
                 new("world", "world")
-            }
+            },
+            Vibrations = [200,100,200],
         },
         new NotificationChannel("custom", "Send Notification with Custom Actions", NotificationPriority.High)
         {
@@ -35,7 +36,7 @@ internal sealed partial class Program
 
     private static Task Main(string[] args) => BuildAvaloniaApp()
 #if DEBUG
-                        .WithDeveloperTools()
+            .WithDeveloperTools()
 #endif
             .StartBrowserAppAsync("out");
 

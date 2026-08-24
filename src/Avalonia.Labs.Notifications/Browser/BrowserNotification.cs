@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 
 namespace Avalonia.Labs.Notifications.Browser;
@@ -21,13 +20,14 @@ class BrowserNotification : INativeNotification
         this.manager = manager;
         this.Actions = channel.Actions;
         this.ChannelIcon = channel.Icon;
+        this.Vibrations = channel.Vibrations ?? [];
 
         Id = GetNextId();
     }
 
     public uint Id { get; }
     public string? ReplyActionTag {  get; set; }
-
+    public int[] Vibrations { get; set; }
     public string? Category => category;
     public string? ChannelIcon { get; set; }
     public string? Title { get; set; }
@@ -37,9 +37,9 @@ class BrowserNotification : INativeNotification
     public IReadOnlyList<NativeNotificationAction>? Actions { get; private set; }
     public Bitmap? Icon { get; set; }
 
-    public void Close()
+    public async void Close()
     {
-        //Nothing to do
+        await manager.Close(Id);
     }
 
     public async void Show()
@@ -64,7 +64,8 @@ class BrowserNotification : INativeNotification
                 ReplyActionTag = ReplyActionTag,
             },
             Icon = ChannelIcon ?? icon,
-            Tag = Tag
+            Tag = Tag,
+            Vibrations = Vibrations
         });
     }
 

@@ -21,7 +21,7 @@ internal class NotificationOptions
     public string? Tag { get; set; }
     public bool RequireInteraction { get; set; }
     public NotificationData? Data { get; set; }
-    public int[] Vibrate { get; set; } = [];
+    public int[] Vibrations { get; set; } = [];
     public NotificationAction[] Actions { get; set; } = [];
 }
 
