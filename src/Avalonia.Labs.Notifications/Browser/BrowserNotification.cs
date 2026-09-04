@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Avalonia.Controls.Notifications;
 using Avalonia.Media.Imaging;
 
 namespace Avalonia.Labs.Notifications.Browser;
@@ -47,11 +48,9 @@ class BrowserNotification : INativeNotification
         string? icon = null;
         if (ChannelIcon == null && Icon != null)
         {
-            using var ms = new MemoryStream();
-            Icon.Save(ms);
-            var bytes = ms.ToArray();
-            var base64 = Convert.ToBase64String(bytes);
-            icon = $"data:image/png;base64,{base64}";
+            using var memStream = new MemoryStream();// Icon.PixelSize.Width * Icon.PixelSize.Height * 4);
+            Icon.Save(memStream);
+            icon = $"data:image/png;base64,{Convert.ToBase64String(memStream.ToArray())}";
         }
 
         await manager.Show(this, new NotificationOptions()

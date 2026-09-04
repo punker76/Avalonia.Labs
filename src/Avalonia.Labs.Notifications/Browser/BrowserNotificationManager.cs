@@ -22,10 +22,10 @@ partial class BrowserNotificationManager : INativeNotificationManagerImpl
         ChannelManager = new NotificationChannelManager();
     }
 
-    [JSImport("create", "notifications")]
+    [JSImport("showNotification", "notifications")]
     public static partial Task ShowNotification(string title, string options);
 
-    [JSImport("close", "notifications")]
+    [JSImport("closeNotification", "notifications")]
     public static partial Task CloseNotification(string id);
 
     [JSImport("closeAllNotifications", "notifications")]
@@ -34,8 +34,8 @@ partial class BrowserNotificationManager : INativeNotificationManagerImpl
     [JSImport("registerServiceWorker", "notifications")]
     public static partial Task RegisterServiceWorker();
 
-    [JSImport("isServiceSupported", "notifications")]
-    public static partial bool IsServiceSupported();
+    [JSImport("isServiceWorkerSupported", "notifications")]
+    public static partial bool IsServiceWorkerSupported();
 
     [JSImport("isSupported", "notifications")]
     public static partial bool IsSupported();
@@ -136,13 +136,11 @@ partial class BrowserNotificationManager : INativeNotificationManagerImpl
     public async void Initialize(AppNotificationOptions? options)
     {
         await JSHost.ImportAsync("notifications", "/_content/Avalonia.Labs.Notifications/notifications.js");
-        if (IsServiceSupported())
+        if (IsServiceWorkerSupported())
         {
             await RegisterServiceWorker();
             await RegisterHandlers(OnClose, OnClick, OnReply);
         }
-        else
-            Console.WriteLine("Browser does not support service worker");
     }
 }
 #endif

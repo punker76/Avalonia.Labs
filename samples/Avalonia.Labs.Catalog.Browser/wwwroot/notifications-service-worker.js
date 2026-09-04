@@ -1,71 +1,69 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 self.addEventListener('install', function (event) {
-    console.log('Service Worker installed');
     event.waitUntil(self.skipWaiting());
 });
-
 self.addEventListener('activate', function (event) {
-    console.log('Service Worker activated');
     event.waitUntil(self.clients.claim());
 });
-
 self.addEventListener('notificationclose', function (event) {
-    console.log("close");
     const notification = event.notification;
     const data = notification.data || {};
-    event.waitUntil(
-        (async function () {
-            await notifyHandlers({
+    event.waitUntil((function () {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield notifyHandlers({
                 data: data,
-                type: 'HandleNotificationClose'
+                type: 'OnClose'
             });
-        })()
-    );
+        });
+    })());
 });
-
 self.addEventListener('notificationclick', function (event) {
     const notification = event.notification;
     const action = event.action;
     const data = notification.data || {};
-    const reply = event.reply; // populated only if this was a text-action reply
-    //notification.close();
-
-    event.waitUntil(
-        (async function () {
+    const reply = event.reply; // populated only if this was a text-action reply    
+    event.waitUntil((function () {
+        return __awaiter(this, void 0, void 0, function* () {
             if (action && data.replyActionTag === action) {
-                await notifyHandlers({
+                yield notifyHandlers({
                     action: action,
                     data: data,
-                    type: 'HandleNotificationReply',
+                    type: 'OnReply',
                     reply: reply
                 });
                 return;
             }
-
-            await notifyHandlers({
+            yield notifyHandlers({
                 action: action,
                 data: data,
-                type: 'HandleNotificationClick'
+                type: 'OnClick'
             });
-        })()
-    );
-});
-
-// Helper to send data to Blazor
-async function notifyHandlers(message) {
-    try {
-        const allClients = await clients.matchAll({
-            type: 'window',
-            includeUncontrolled: true
         });
-
-        for (const client of allClients) {
-            try {
-                await client.postMessage(message);
-            } catch (e) {
-                console.error(e);
+    })());
+});
+function notifyHandlers(message) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const allClients = yield self.clients.matchAll({
+                type: 'window',
+                includeUncontrolled: true
+            });
+            for (const client of allClients) {
+                client.postMessage(message);
             }
         }
-    } catch (error) {
-        console.error('Error sending to Blazor:', error);
-    }
+        catch (error) {
+            console.error('Error on notifications:', error);
+        }
+    });
 }
+export {};
+//# sourceMappingURL=notifications-service-worker.js.map
