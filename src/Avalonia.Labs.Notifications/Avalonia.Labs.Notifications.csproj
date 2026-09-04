@@ -41,4 +41,8 @@
   <ItemGroup>
     <Content Include="build\Avalonia.Labs.Notifications.targets" PackagePath="buildTransitive\" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
 </Project>
