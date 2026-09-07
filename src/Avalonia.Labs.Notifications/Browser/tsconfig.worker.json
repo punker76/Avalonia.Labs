@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "ES2020",
+    "noEmitOnError": true,
+    "esModuleInterop": true,
+    "isolatedModules": true, // we need it for esbuild
+    "lib": [
+      "dom",
+      "es2018",
+      "es2019",
+      "esnext.asynciterable",
+      "webworker"
+    ],
+    "types": [],
+    "outDir": "../wwwroot",
+    "rootDir": ".",
+    "strict": true,
+    "sourceMap": true,
+    "skipLibCheck": true
+  },
+  "include": [ "notifications-service-worker.ts" ]
+}

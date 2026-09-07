@@ -12,6 +12,12 @@ namespace Avalonia.Labs.Notifications
 
         public NotificationPriority Priority { get; }
 
+#if BROWSER
+        public int[] Vibrations { get; set; }
+        public string? Icon { get; set; }
+#endif
+
+
         public NotificationChannel(string id, string label, NotificationPriority priority = NotificationPriority.Default)
         {
             Id = id;

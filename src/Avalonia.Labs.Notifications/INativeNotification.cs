@@ -38,6 +38,10 @@ namespace Avalonia.Labs.Notifications
     public record NativeNotificationAction(string Caption, string Tag)
     {
         public Bitmap? Icon { get; init; }
+
+#if BROWSER
+        public string? ActionIcon { get; init; }
+#endif
     }
 
     public interface INativeNotificationManager

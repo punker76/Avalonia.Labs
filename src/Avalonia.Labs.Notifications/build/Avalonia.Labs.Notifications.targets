@@ -1,0 +1,23 @@
+<Project>
+  <Target Name="CopyNotificationStaticAssets" BeforeTargets="ResolveStaticWebAssetsInputs"
+          Condition="Exists('$(MSBuildProjectDirectory)\wwwroot')">
+    <ItemGroup>
+      <_NotificationAssets Include="$(MSBuildThisFileDirectory)..\staticwebassets\notifications-service-worker.js" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_NotificationAssets)"
+          DestinationFolder="$(MSBuildProjectDirectory)\wwwroot\"
+          SkipUnchangedFiles="true"
+          Condition="Exists('@(_NotificationAssets)')" />
+  </Target>
+
+  <Target Name="CopyNotificationStaticAssetsPublish" BeforeTargets="BeforePublish"
+          Condition="Exists('$(MSBuildProjectDirectory)\wwwroot')">
+    <ItemGroup>
+      <_NotificationAssets Include="$(MSBuildThisFileDirectory)..\staticwebassets\notifications-service-worker.js" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_NotificationAssets)"
+          DestinationFolder="$(PublishDir)\wwwroot\"
+          SkipUnchangedFiles="true"
+          Condition="Exists('@(_NotificationAssets)')" />
+  </Target>
+</Project>

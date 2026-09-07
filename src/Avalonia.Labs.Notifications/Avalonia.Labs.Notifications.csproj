@@ -1,13 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
-    <TargetFrameworks>net8.0;net10.0-android;net10.0-ios</TargetFrameworks>
+    <TargetFrameworks>net8.0;net10.0-android;net10.0-ios;net10.0-browser</TargetFrameworks>
     <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net10.0-ios'">13.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net10.0-android'">26.0</SupportedOSPlatformVersion>
     <Nullable>annotations</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>true</IsPackable>
+    <IsBrowser>$([System.String]::Copy('$(TargetFramework)').Contains('-browser'))</IsBrowser>
     <DefineConstants Condition="'$(TargetFramework)' == 'net8.0'">$(DefineConstants);INCLUDE_WINDOWS;INCLUDE_LINUX</DefineConstants>
     <!-- ModuleInitializer in microcom codegen -->
     <NoWarn>$(NoWarn);CA2255</NoWarn>
@@ -22,7 +22,7 @@
     <AdditionalFiles Include="Linux/DBusXml/org.freedesktop.portal.Notification.xml" DBusGeneratorMode="Proxy" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0' AND '$(IsBrowser)' == 'false'">
     <PackageReference Include="Tmds.DBus.Protocol" />
     <PackageReference Include="Tmds.DBus.SourceGenerator" PrivateAssets="all" />
     <PackageReference Include="MicroCom.CodeGenerator.Roslyn" PrivateAssets="all" />
@@ -37,4 +37,11 @@
     <PackageReference Include="Xamarin.AndroidX.AppCompat" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="build\Avalonia.Labs.Notifications.targets" PackagePath="buildTransitive\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
 </Project>
